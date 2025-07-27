@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as crypto from 'crypto';
+import { getPackageName } from './package.util';
 
 /**
  * Format a timestamp for logging
@@ -18,14 +19,15 @@ function getTimestamp(): string {
  * @param maxLength Maximum length of the resulting string
  * @returns Safely stringified object
  */
-function safeStringify(obj: unknown, maxLength = 1000): string {
+function safeStringify(obj: unknown, maxLength = 2000): string {
 	try {
 		const str = JSON.stringify(obj);
 		if (str.length <= maxLength) {
 			return str;
 		}
 		return `${str.substring(0, maxLength)}... (truncated, ${str.length} chars total)`;
-	} catch {
+	} catch (error: unknown) {
+		console.error('Failed to stringify object:', error);
 		return '[Object cannot be stringified]';
 	}
 }
@@ -116,58 +118,181 @@ function isDebugEnabledForModule(modulePath: string): boolean {
 	});
 }
 
+// Constants for logging configuration
+const LOGGING_CONSTANTS = {
+	MAX_LOG_LINE_LENGTH: 2000,
+	LOG_BATCH_SIZE: 10,
+	SESSION_ID_LENGTH: 36,
+	DEFAULT_LOG_LEVEL: 'info',
+	FILE_PERMISSIONS: {
+		LOG_DIR: 0o755,
+		LOG_FILE: 0o644,
+	},
+} as const;
+
 // Generate a unique session ID for this process
 const SESSION_ID = crypto.randomUUID();
 
-// Get the package name from environment variables or default to 'mcp-server'
-const getPkgName = (): string => {
-	try {
-		// Try to get it from package.json first if available
-		const packageJsonPath = path.resolve(process.cwd(), 'package.json');
-		if (fs.existsSync(packageJsonPath)) {
-			const packageJson = JSON.parse(
-				fs.readFileSync(packageJsonPath, 'utf8'),
-			);
-			if (packageJson.name) {
-				// Extract the last part of the name if it's scoped
-				const match = packageJson.name.match(/(@[\w-]+\/)?(.+)/);
-				return match ? match[2] : packageJson.name;
+// Async logging setup
+class AsyncLogger {
+	private static logQueue: string[] = [];
+	private static isProcessing = false;
+	private static logStream: fs.WriteStream | null = null;
+	private static logFilePath: string;
+	private static mcpDataDir: string;
+
+	/**
+	 * Initialize the async logger with secure file operations
+	 */
+	static initialize(): void {
+		try {
+			const homeDir = os.homedir();
+			this.mcpDataDir = path.join(homeDir, '.mcp', 'data');
+			const cliName = getPackageName();
+
+			// Ensure the MCP data directory exists with proper permissions
+			if (!fs.existsSync(this.mcpDataDir)) {
+				fs.mkdirSync(this.mcpDataDir, {
+					recursive: true,
+					mode: LOGGING_CONSTANTS.FILE_PERMISSIONS.LOG_DIR,
+				});
 			}
+
+			// Create the log file path with session ID
+			const logFilename = `${cliName}.${SESSION_ID}.log`;
+			this.logFilePath = path.join(this.mcpDataDir, logFilename);
+
+			// Validate file path to prevent directory traversal
+			const resolvedPath = path.resolve(this.logFilePath);
+			if (!resolvedPath.startsWith(path.resolve(this.mcpDataDir))) {
+				throw new Error(
+					'Invalid log file path: potential directory traversal',
+				);
+			}
+
+			// Initialize log file with header
+			const logHeader =
+				`# ${cliName} Log Session\n` +
+				`Session ID: ${SESSION_ID}\n` +
+				`Started: ${new Date().toISOString()}\n` +
+				`Process ID: ${process.pid}\n` +
+				`Working Directory: ${process.cwd()}\n` +
+				`Command: ${process.argv.join(' ')}\n\n` +
+				`## Log Entries\n\n`;
+
+			fs.writeFileSync(resolvedPath, logHeader, {
+				encoding: 'utf8',
+				mode: LOGGING_CONSTANTS.FILE_PERMISSIONS.LOG_FILE,
+			});
+		} catch (error: unknown) {
+			console.error('Failed to initialize logging:', error);
+			// Set fallback path to avoid further errors
+			this.logFilePath = '/dev/null';
 		}
-	} catch {
-		// Silently fail and use default
 	}
 
-	// Fallback to environment variable or default
-	return process.env.PACKAGE_NAME || 'mcp-server';
-};
+	/**
+	 * Get or create the log write stream
+	 */
+	private static getLogStream(): fs.WriteStream {
+		if (!this.logStream) {
+			this.logStream = fs.createWriteStream(this.logFilePath, {
+				flags: 'a',
+				encoding: 'utf8',
+			});
 
-// MCP logs directory setup
-const HOME_DIR = os.homedir();
-const MCP_DATA_DIR = path.join(HOME_DIR, '.mcp', 'data');
-const CLI_NAME = getPkgName();
+			// Handle stream errors
+			this.logStream.on('error', (error: unknown) => {
+				console.error('Log stream error:', error);
+				this.logStream = null; // Reset stream for retry
+			});
+		}
+		return this.logStream;
+	}
 
-// Ensure the MCP data directory exists
-if (!fs.existsSync(MCP_DATA_DIR)) {
-	fs.mkdirSync(MCP_DATA_DIR, { recursive: true });
+	/**
+	 * Add a log message to the queue for async processing
+	 */
+	static queueLog(message: string): void {
+		this.logQueue.push(message);
+		this.processLogQueue();
+	}
+
+	/**
+	 * Process the log queue asynchronously
+	 */
+	private static async processLogQueue(): Promise<void> {
+		if (this.isProcessing || this.logQueue.length === 0) {
+			return;
+		}
+
+		this.isProcessing = true;
+
+		try {
+			// Process logs in batches for better performance
+			const batch = this.logQueue.splice(
+				0,
+				LOGGING_CONSTANTS.LOG_BATCH_SIZE,
+			);
+			const batchContent = batch.join('\n') + '\n';
+
+			// Use write stream for better performance
+			const stream = this.getLogStream();
+			await new Promise<void>((resolve, reject) => {
+				stream.write(batchContent, (error) => {
+					if (error) {
+						reject(error);
+					} else {
+						resolve();
+					}
+				});
+			});
+		} catch (error: unknown) {
+			console.error('Failed to write log batch:', error);
+			// Add failed logs back to the queue for retry
+			// Note: In a production system, you might want to implement
+			// a dead letter queue or exponential backoff
+		} finally {
+			this.isProcessing = false;
+
+			// Continue processing if there are more logs
+			if (this.logQueue.length > 0) {
+				setImmediate(() => this.processLogQueue());
+			}
+		}
+	}
+
+	/**
+	 * Get the current log file path
+	 */
+	static getLogFilePath(): string {
+		return this.logFilePath;
+	}
+
+	/**
+	 * Cleanup resources when the process exits
+	 */
+	static cleanup(): void {
+		if (this.logStream) {
+			this.logStream.end();
+			this.logStream = null;
+		}
+	}
 }
 
-// Create the log file path with session ID
-const LOG_FILENAME = `${CLI_NAME}.${SESSION_ID}.log`;
-const LOG_FILEPATH = path.join(MCP_DATA_DIR, LOG_FILENAME);
+// Initialize async logger
+AsyncLogger.initialize();
 
-// Write initial log header
-fs.writeFileSync(
-	LOG_FILEPATH,
-	`# ${CLI_NAME} Log Session\n` +
-		`Session ID: ${SESSION_ID}\n` +
-		`Started: ${new Date().toISOString()}\n` +
-		`Process ID: ${process.pid}\n` +
-		`Working Directory: ${process.cwd()}\n` +
-		`Command: ${process.argv.join(' ')}\n\n` +
-		`## Log Entries\n\n`,
-	'utf8',
-);
+// Cleanup on process exit
+process.on('exit', () => AsyncLogger.cleanup());
+process.on('SIGINT', () => {
+	AsyncLogger.cleanup();
+	process.exit(0);
+});
+process.on('SIGTERM', () => {
+	AsyncLogger.cleanup();
+	process.exit(0);
+});
 
 // Logger singleton to track initialization
 let isLoggerInitialized = false;
@@ -200,7 +325,6 @@ class Logger {
 	private context?: string;
 	private modulePath: string;
 	private static sessionId = SESSION_ID;
-	private static logFilePath = LOG_FILEPATH;
 
 	constructor(context?: string, modulePath: string = '') {
 		this.context = context;
@@ -211,7 +335,7 @@ class Logger {
 			this.info(
 				`Logger initialized with session ID: ${Logger.sessionId}`,
 			);
-			this.info(`Logs will be saved to: ${Logger.logFilePath}`);
+			this.info(`Logs will be saved to: ${AsyncLogger.getLogFilePath()}`);
 			isLoggerInitialized = true;
 		}
 	}
@@ -302,13 +426,8 @@ class Logger {
 			}
 		}
 
-		// Write to log file
-		try {
-			fs.appendFileSync(Logger.logFilePath, `${logMessage}\n`, 'utf8');
-		} catch (err) {
-			// If we can't write to the log file, log the error to console
-			console.error(`Failed to write to log file: ${err}`);
-		}
+		// Queue log message for async processing
+		AsyncLogger.queueLog(logMessage);
 
 		if (process.env.NODE_ENV === 'test') {
 			console[level](logMessage);
@@ -361,7 +480,7 @@ class Logger {
 	 * @returns The path to the current log file
 	 */
 	static getLogFilePath(): string {
-		return Logger.logFilePath;
+		return AsyncLogger.getLogFilePath();
 	}
 }
 
