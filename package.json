@@ -1,5 +1,5 @@
 {
-	"name": "@aashari/mcp-server-atlassian-confluence",
+	"name": "@greenstevester/mcp-server-atlassian-confluence",
 	"version": "1.16.0",
 	"description": "Node.js/TypeScript MCP server for Atlassian Confluence. Provides tools enabling AI systems (LLMs) to list/get spaces & pages (content formatted as Markdown) and search via CQL. Connects AI seamlessly to Confluence knowledge bases using the standard MCP interface.",
 	"main": "dist/index.js",
@@ -7,10 +7,10 @@
 	"type": "commonjs",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/aashari/mcp-server-atlassian-confluence.git"
+		"url": "https://github.com/greenstevester/aashari_mcp-server-atlassian-confluence.git"
 	},
 	"bin": {
-		"mcp-atlassian-confluence": "./dist/index.js"
+		"mcp-server-atlassian-confluence": "./dist/index.js"
 	},
 	"scripts": {
 		"build": "tsc",
@@ -21,6 +21,8 @@
 		"test:cli": "jest src/cli/.*\\.cli\\.test\\.ts --runInBand --testTimeout=60000",
 		"lint": "eslint src --ext .ts --config eslint.config.mjs",
 		"format": "prettier --write 'src/**/*.ts' 'scripts/**/*.js'",
+		"prettier": "npx prettier src --check && npx prettier scripts --check",
+		"prettier:fix": "npm run prettier -- --write",
 		"publish:npm": "npm publish",
 		"update:check": "npx npm-check-updates",
 		"update:deps": "npx npm-check-updates -u && npm install --legacy-peer-deps",
@@ -28,7 +30,9 @@
 		"dev:server": "DEBUG=true npm run build && npx @modelcontextprotocol/inspector -e DEBUG=true node dist/index.js",
 		"dev:cli": "DEBUG=true npm run build && DEBUG=true node dist/index.js",
 		"start:server": "npm run build && npx @modelcontextprotocol/inspector node dist/index.js",
-		"start:cli": "npm run build && node dist/index.js"
+		"start:cli": "npm run build && node dist/index.js",
+		"clean": "rimraf ./dist/ ./exec/",
+		"clean_node_modules": "rimraf ./node_modules package-lock.json"
 	},
 	"keywords": [
 		"mcp",
@@ -79,7 +83,8 @@
 		"ts-jest": "^29.3.0",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.8.2",
-		"typescript-eslint": "^8.28.0"
+		"typescript-eslint": "^8.28.0",
+		"rimraf": "^6.0.1"
 	},
 	"publishConfig": {
 		"registry": "https://registry.npmjs.org/",
@@ -100,6 +105,9 @@
 		"testEnvironment": "node",
 		"testMatch": [
 			"**/src/**/*.test.ts"
+		],
+		"testPathIgnorePatterns": [
+			"src/index.test.ts"
 		],
 		"collectCoverageFrom": [
 			"src/**/*.ts",

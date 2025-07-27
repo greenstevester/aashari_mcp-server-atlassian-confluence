@@ -1,0 +1,179 @@
+name: Security Alerts
+
+on:
+  schedule:
+    # Run security checks twice daily
+    - cron: '0 6,18 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  security-events: write
+
+jobs:
+  security-audit:
+    name: Security Audit & Alerts
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci --legacy-peer-deps
+      
+    - name: Run comprehensive security audit
+      id: audit
+      run: |
+        echo "# Security Audit Report - $(date)" > security-report.md
+        echo "" >> security-report.md
+        
+        # NPM Audit
+        echo "## NPM Audit Results" >> security-report.md
+        if npm audit --audit-level=low --json > npm-audit.json 2>/dev/null; then
+          VULNERABILITIES=$(jq '.metadata.vulnerabilities.total' npm-audit.json)
+          if [ "$VULNERABILITIES" -gt 0 ]; then
+            echo "⚠️ Found $VULNERABILITIES vulnerabilities" >> security-report.md
+            echo "" >> security-report.md
+            echo "\`\`\`json" >> security-report.md
+            cat npm-audit.json >> security-report.md
+            echo "\`\`\`" >> security-report.md
+            echo "AUDIT_ISSUES=true" >> $GITHUB_OUTPUT
+          else
+            echo "✅ No vulnerabilities found" >> security-report.md
+            echo "AUDIT_ISSUES=false" >> $GITHUB_OUTPUT
+          fi
+        else
+          npm audit --audit-level=low >> security-report.md 2>&1 || true
+          echo "AUDIT_ISSUES=true" >> $GITHUB_OUTPUT
+        fi
+        
+        echo "" >> security-report.md
+        
+        # Check for outdated dependencies with known vulnerabilities
+        echo "## Outdated Dependencies Check" >> security-report.md
+        npx npm-check-updates --format json > ncu-report.json 2>/dev/null || true
+        if [ -s ncu-report.json ]; then
+          OUTDATED_COUNT=$(jq '. | length' ncu-report.json)
+          if [ "$OUTDATED_COUNT" -gt 0 ]; then
+            echo "📦 Found $OUTDATED_COUNT outdated dependencies" >> security-report.md
+            echo "" >> security-report.md
+            echo "\`\`\`json" >> security-report.md
+            cat ncu-report.json >> security-report.md
+            echo "\`\`\`" >> security-report.md
+          else
+            echo "✅ All dependencies are up to date" >> security-report.md
+          fi
+        fi
+        
+    - name: Check for secrets in recent commits
+      id: secrets-check
+      run: |
+        echo "" >> security-report.md
+        echo "## Recent Commits Secret Scan" >> security-report.md
+        
+        # Check last 10 commits for potential secrets
+        git log --oneline -10 --grep="password\|token\|key\|secret" --all > recent-secrets.txt || true
+        if [ -s recent-secrets.txt ]; then
+          echo "⚠️ Found commits that might contain secrets:" >> security-report.md
+          echo "\`\`\`" >> security-report.md
+          cat recent-secrets.txt >> security-report.md
+          echo "\`\`\`" >> security-report.md
+          echo "SECRETS_FOUND=true" >> $GITHUB_OUTPUT
+        else
+          echo "✅ No suspicious commit messages found" >> security-report.md
+          echo "SECRETS_FOUND=false" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: License compliance check
+      id: license-check
+      run: |
+        echo "" >> security-report.md
+        echo "## License Compliance" >> security-report.md
+        
+        # Check for licenses that might be problematic
+        npx license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;Unlicense;WTFPL' --excludePrivatePackages > license-check.txt 2>&1
+        if [ $? -eq 0 ]; then
+          echo "✅ All licenses are compliant" >> security-report.md
+        else
+          echo "⚠️ License compliance issues found:" >> security-report.md
+          echo "\`\`\`" >> security-report.md
+          cat license-check.txt >> security-report.md
+          echo "\`\`\`" >> security-report.md
+          echo "LICENSE_ISSUES=true" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Create security alert issue
+      if: steps.audit.outputs.AUDIT_ISSUES == 'true' || steps.secrets-check.outputs.SECRETS_FOUND == 'true' || steps.license-check.outputs.LICENSE_ISSUES == 'true'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          const report = fs.readFileSync('security-report.md', 'utf8');
+          
+          // Check if there's already an open security alert issue
+          const { data: issues } = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            labels: 'security-alert',
+            state: 'open'
+          });
+          
+          const title = `🚨 Security Alert - ${new Date().toISOString().split('T')[0]}`;
+          
+          if (issues.length === 0) {
+            // Create new issue
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: `${report}\n\n---\n\n**Automated Security Report**\nThis issue was automatically created by the security monitoring workflow.\n\n- Review the findings above\n- Address critical and high severity vulnerabilities promptly\n- Update dependencies as needed\n- Close this issue once all items are resolved`,
+              labels: ['security-alert', 'automated', 'priority-high'],
+              assignees: ['greenstevester']
+            });
+          } else {
+            // Update existing issue
+            const issueNumber = issues[0].number;
+            const currentBody = issues[0].body;
+            const newBody = `${currentBody}\n\n---\n\n## Update: ${new Date().toISOString()}\n\n${report}`;
+            
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: newBody
+            });
+            
+            // Add comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: `🔄 **Security audit update**: New findings detected. Please review the updated issue description.`
+            });
+          }
+          
+    - name: Upload security artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-audit-report-${{ github.run_number }}
+        path: |
+          security-report.md
+          npm-audit.json
+          ncu-report.json
+          license-check.txt
+          recent-secrets.txt
+        retention-days: 30
+        
+    - name: Summary
+      run: |
+        echo "## Security Audit Summary" >> $GITHUB_STEP_SUMMARY
+        cat security-report.md >> $GITHUB_STEP_SUMMARY

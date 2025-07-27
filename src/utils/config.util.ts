@@ -58,11 +58,18 @@ class ConfigLoader {
 		);
 
 		try {
+			envLogger.debug(
+				`Trying to resolve configuration from .env file in project root...`,
+			);
 			const result = dotenv.config();
 			if (result.error) {
 				envLogger.debug('No .env file found or error reading it');
 				return;
 			}
+			envLogger.debug(
+				`Resolved Global configuration from .env file in project root`,
+			);
+
 			envLogger.debug('Loaded configuration from .env file');
 		} catch (error) {
 			envLogger.error('Error loading .env file', error);
@@ -80,6 +87,9 @@ class ConfigLoader {
 
 		try {
 			const homedir = os.homedir();
+			globalLogger.debug(
+				`Searching for Global configuration in ${homedir}/.mcp/configs.json`,
+			);
 			const globalConfigPath = path.join(homedir, '.mcp', 'configs.json');
 
 			if (!fs.existsSync(globalConfigPath)) {
@@ -87,6 +97,9 @@ class ConfigLoader {
 				return;
 			}
 
+			globalLogger.debug(
+				`Global configuration found for ${globalConfigPath}`,
+			);
 			const configContent = fs.readFileSync(globalConfigPath, 'utf8');
 			const config = JSON.parse(configContent);
 
@@ -100,6 +113,9 @@ class ConfigLoader {
 				return;
 			}
 
+			globalLogger.debug(
+				`Finally, checking for Global configuration using Environment variables...`,
+			);
 			const environments = config[this.packageName].environments;
 			for (const [key, value] of Object.entries(environments)) {
 				// Only set if not already defined in process.env
@@ -141,5 +157,5 @@ class ConfigLoader {
 
 // Create and export a singleton instance with the package name from package.json
 export const config = new ConfigLoader(
-	'@aashari/mcp-server-atlassian-confluence',
+	' @greenstevester/mcp-server-atlassian-confluence',
 );

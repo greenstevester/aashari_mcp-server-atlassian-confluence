@@ -1,0 +1,44 @@
+# Global ownership
+* @greenstevester
+
+# Core source code
+/src/ @greenstevester
+
+# Build and configuration files
+/package.json @greenstevester
+/package-lock.json @greenstevester
+/tsconfig.json @greenstevester
+/eslint.config.mjs @greenstevester
+/.prettierrc @greenstevester
+/.npmrc @greenstevester
+
+# Docker configuration
+/Dockerfile @greenstevester
+
+# Documentation
+/README.md @greenstevester
+/CHANGELOG.md @greenstevester
+/CLAUDE.md @greenstevester
+
+# GitHub workflows and configuration
+/.github/ @greenstevester
+
+# Build artifacts (if committed)
+/dist/ @greenstevester
+
+# Scripts
+/scripts/ @greenstevester
+
+# Test configuration and coverage
+/coverage/ @greenstevester
+
+# MCP configuration
+/smithery.yaml @greenstevester
+
+# Root level configuration files
+/*.json @greenstevester
+/*.yaml @greenstevester
+/*.yml @greenstevester
+/*.js @greenstevester
+/*.mjs @greenstevester
+/*.ts @greenstevester

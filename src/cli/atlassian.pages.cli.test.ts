@@ -20,12 +20,7 @@ describe('Atlassian Confluence Pages CLI Commands', () => {
 	// Helper function to skip tests when credentials are missing
 	const skipIfNoCredentials = () => {
 		const credentials = getAtlassianCredentials();
-		// If we're running in CI or test environment, use mock responses instead of skipping
-		if (!credentials && process.env.NODE_ENV === 'test') {
-			// Return false to allow tests to run with potential mocks
-			return false;
-		}
-		// Skip if no credentials are available (for integration tests)
+		// Skip if no credentials are available
 		return !credentials;
 	};
 

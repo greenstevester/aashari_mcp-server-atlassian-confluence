@@ -1,26 +1,100 @@
 version: 2
 updates:
+  # npm dependencies
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
     open-pull-requests-limit: 10
-    versioning-strategy: auto
+    reviewers:
+      - "greenstevester"
+    assignees:
+      - "greenstevester"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
     labels:
       - "dependencies"
-    commit-message:
-      prefix: "chore"
-      include: "scope"
-    allow:
-      - dependency-type: "direct"
+      - "automated"
+    versioning-strategy: "increase"
+    groups:
+      # Group all non-security updates together
+      production-dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "@types/*"
+          - "*eslint*"
+          - "prettier"
+          - "jest"
+          - "typescript"
+          - "@semantic-release/*"
+          - "semantic-release"
+        update-types:
+          - "minor"
+          - "patch"
+      # Group dev dependencies
+      development-dependencies:
+        patterns:
+          - "@types/*"
+          - "*eslint*"
+          - "prettier"
+          - "jest"
+          - "typescript"
+          - "@semantic-release/*"
+          - "semantic-release"
+          - "ts-*"
+          - "nodemon"
+          - "npm-check-updates"
+        update-types:
+          - "minor"
+          - "patch"
+    # Security updates should always be individual PRs
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-patch"]
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions dependencies
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
     open-pull-requests-limit: 5
+    reviewers:
+      - "greenstevester"
+    assignees:
+      - "greenstevester"
+    commit-message:
+      prefix: "chore(actions)"
+      include: "scope"
     labels:
+      - "github-actions"
       - "dependencies"
-      - "github-actions" 
+      - "automated"
+
+  # Docker dependencies
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "greenstevester"
+    assignees:
+      - "greenstevester"
+    commit-message:
+      prefix: "chore(docker)"
+      include: "scope"
+    labels:
+      - "docker"
+      - "dependencies"
+      - "automated" 

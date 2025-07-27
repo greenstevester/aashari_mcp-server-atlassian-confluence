@@ -1,6 +1,10 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Logger } from '../utils/logger.util.js';
 import { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
+import {
+	ServerRequest,
+	ServerNotification,
+} from '@modelcontextprotocol/sdk/types.js';
 import { formatErrorForMcpTool } from '../utils/error.util.js';
 import {
 	ListSpacesToolArgsType,
@@ -24,7 +28,7 @@ import atlassianSpacesController from '../controllers/atlassian.spaces.controlle
  */
 async function listSpaces(
 	args: ListSpacesToolArgsType,
-	_extra: RequestHandlerExtra,
+	_extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
 ) {
 	const toolLogger = Logger.forContext(
 		'tools/atlassian.spaces.tool.ts',
@@ -74,7 +78,7 @@ async function listSpaces(
  */
 async function getSpace(
 	args: GetSpaceToolArgsType,
-	_extra: RequestHandlerExtra,
+	_extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
 ) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.spaces.tool.ts',

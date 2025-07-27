@@ -50,10 +50,10 @@ function registerListPagesCommand(program: Command): void {
         Note: --space-id requires numeric IDs. Use 'list-spaces' or 'get-space' first if you only have the space key.
 
         Examples:
-  $ mcp-atlassian-confluence list-pages --space-id 123456 --status current
-  $ mcp-atlassian-confluence list-pages --limit 50 --query "Project"
-  $ mcp-atlassian-confluence list-pages --space-id 123456,789012 --query "documentation"
-  $ mcp-atlassian-confluence list-pages --cursor "next-cursor-value"`,
+  $ mcp-server-atlassian-confluence list-pages --space-id 123456 --status current
+  $ mcp-server-atlassian-confluence list-pages --limit 50 --query "Project"
+  $ mcp-server-atlassian-confluence list-pages --space-id 123456,789012 --query "documentation"
+  $ mcp-server-atlassian-confluence list-pages --cursor "next-cursor-value"`,
 		)
 		.option(
 			'-l, --limit <number>',

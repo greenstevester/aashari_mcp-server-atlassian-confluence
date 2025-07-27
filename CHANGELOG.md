@@ -41,7 +41,7 @@
 * properly skip tests when credentials are not available ([9aad033](https://github.com/aashari/mcp-server-atlassian-confluence/commit/9aad033042de9597d2e5c34128ab48d0144f49bb))
 * resolve build errors with status imports ([19e7d11](https://github.com/aashari/mcp-server-atlassian-confluence/commit/19e7d1163c47bfc8906e16204b7dba8b0ab4af36))
 * resolve TypeScript errors and lint warnings in Confluence MCP server ([a80d463](https://github.com/aashari/mcp-server-atlassian-confluence/commit/a80d46314ea985e8f1089e12b83c5d88701b7a45))
-* standardize CLI binary name to mcp-atlassian-confluence ([9e55363](https://github.com/aashari/mcp-server-atlassian-confluence/commit/9e5536349f0c8920c0df50f51c0947ddecb0487a))
+* standardize CLI binary name to mcp-server-atlassian-confluence ([9e55363](https://github.com/aashari/mcp-server-atlassian-confluence/commit/9e5536349f0c8920c0df50f51c0947ddecb0487a))
 * standardize sort and array parameters in Confluence CLI ([4f633c5](https://github.com/aashari/mcp-server-atlassian-confluence/commit/4f633c5257f79ebd203166c8aa85a487ac6f06bc))
 * **tests:** add mock implementation to eliminate skipped tests ([1075287](https://github.com/aashari/mcp-server-atlassian-confluence/commit/10752872d6e99ebeebd229f2aa00e26a3c89ea74))
 * update CLI test expectations to match implementation behavior ([623b048](https://github.com/aashari/mcp-server-atlassian-confluence/commit/623b048616d9beb7915f660eb28241ac5952e93b))
