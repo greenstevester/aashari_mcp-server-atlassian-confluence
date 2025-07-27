@@ -1,0 +1,119 @@
+name: Feature Request
+description: Suggest an idea for the MCP Atlassian Confluence server
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+assignees:
+  - greenstevester
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a new feature! Please provide as much detail as possible.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Prerequisites
+      description: Please confirm the following before submitting your feature request
+      options:
+        - label: I have searched existing issues to ensure this feature hasn't been requested before
+          required: true
+        - label: I have read the project documentation
+          required: true
+        - label: This feature aligns with the project's goals (MCP server for Atlassian Confluence)
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem description
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the solution you'd like
+      placeholder: A clear and concise description of what you want to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe any alternative solutions or features you've considered
+      placeholder: A clear and concise description of any alternative solutions or features you've considered.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: feature-category
+    attributes:
+      label: Feature category
+      description: What category does this feature fall into?
+      options:
+        - New MCP tool/resource
+        - Confluence API enhancement
+        - CLI improvement
+        - Configuration/setup
+        - Performance optimization
+        - Documentation
+        - Developer experience
+        - Other (please specify in additional context)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Low - Nice to have
+        - Medium - Would improve my workflow
+        - High - Critical for my use case
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case
+      description: Describe your specific use case for this feature
+      placeholder: |
+        How would you use this feature? What problem does it solve for you?
+        Include specific examples if possible.
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation-ideas
+    attributes:
+      label: Implementation ideas
+      description: If you have ideas about how this could be implemented, please share them
+      placeholder: |
+        Any technical details, API considerations, or implementation approaches you've thought of.
+        This is optional but can be very helpful!
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other context, screenshots, or examples about the feature request here
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Are you willing to help implement this feature?
+      options:
+        - label: I would be willing to submit a pull request to implement this feature
+          required: false

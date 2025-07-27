@@ -1,0 +1,129 @@
+name: Bug Report
+description: Create a report to help us improve the MCP Atlassian Confluence server
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees:
+  - greenstevester
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Prerequisites
+      description: Please confirm the following before submitting your bug report
+      options:
+        - label: I have searched existing issues to ensure this bug hasn't been reported before
+          required: true
+        - label: I have read the project documentation
+          required: true
+        - label: I am using the latest version of the MCP server
+          required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear and concise description of what the bug is
+      placeholder: Tell us what you see!
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expected to happen
+      placeholder: What should have happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Configure the server with '...'
+        2. Run command '...'
+        3. Call tool '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      description: What operating system are you running?
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - Docker
+        - Other (please specify in additional context)
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Node.js version
+      description: What version of Node.js are you running?
+      placeholder: ex. v20.10.0
+    validations:
+      required: true
+
+  - type: input
+    id: mcp-version
+    attributes:
+      label: MCP Server version
+      description: What version of the MCP server are you using?
+      placeholder: ex. 1.16.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: confluence-config
+    attributes:
+      label: Confluence Configuration
+      description: |
+        Please provide relevant configuration details (remove sensitive information):
+        - Confluence Cloud or Server/Data Center?
+        - API token authentication method
+        - Site name format
+      placeholder: |
+        - Type: Confluence Cloud
+        - Authentication: API Token
+        - Site: example.atlassian.net
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Are you willing to help fix this issue?
+      options:
+        - label: I would be willing to submit a pull request to fix this issue
+          required: false
