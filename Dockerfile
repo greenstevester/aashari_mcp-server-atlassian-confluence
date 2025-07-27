@@ -14,17 +14,15 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 COPY tsconfig.json ./
 
-# Install all dependencies (including devDependencies for build)
-RUN npm ci --only=production=false && npm cache clean --force
-
-# Copy source code
+# Copy source code before installing dependencies to avoid prepare script issues
 COPY src/ ./src/
 
-# Build the TypeScript application
-RUN npm run build
+# Install all dependencies (including devDependencies for build)
+# The prepare script will automatically build the TypeScript application
+RUN npm ci --include=dev && npm cache clean --force
 
 # Remove devDependencies to reduce size for next stage
-RUN npm prune --production
+RUN npm prune --omit=dev
 
 # Stage 2: Production runtime
 FROM node:lts-alpine AS runtime
