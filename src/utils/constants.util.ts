@@ -15,10 +15,10 @@ export const VERSION = '1.14.0';
  * Package name with scope
  * Used for initialization and identification
  */
-export const PACKAGE_NAME = '@aashari/mcp-server-atlassian-confluence';
+export const PACKAGE_NAME = ' @greenstevester/mcp-server-atlassian-confluence';
 
 /**
  * CLI command name
  * Used for binary name and CLI help text
  */
-export const CLI_NAME = 'mcp-atlassian-confluence';
+export const CLI_NAME = 'mcp-server-atlassian-confluence';

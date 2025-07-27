@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: Ask a Question
-    url: https://github.com/aashari/mcp-server-atlassian-confluence/discussions
+    url: https://github.com/ greenstevester/mcp-server-atlassian-confluence/discussions
     about: Ask questions and discuss ideas in our GitHub Discussions
   - name: Atlassian Confluence Documentation
     url: https://support.atlassian.com/confluence-cloud/

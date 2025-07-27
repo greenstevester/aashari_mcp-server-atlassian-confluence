@@ -47,6 +47,15 @@ export async function startServer(mode: 'stdio' | 'sse' = 'stdio') {
 	serverLogger.debug(
 		`ATLASSIAN_API_TOKEN exists: ${Boolean(process.env.ATLASSIAN_API_TOKEN)}`,
 	);
+
+	serverLogger.debug(
+		`ATLASSIAN_SITE_NAME: ${process.env.ATLASSIAN_SITE_NAME}`,
+	);
+
+	serverLogger.debug(
+		`ATLASSIAN_USER_EMAIL: ${process.env.ATLASSIAN_USER_EMAIL}`,
+	);
+
 	serverLogger.debug(`Config DEBUG value: ${config.get('DEBUG')}`);
 
 	serverLogger.info(`Initializing Confluence MCP server v${VERSION}`);
@@ -80,7 +89,7 @@ export async function startServer(mode: 'stdio' | 'sse' = 'stdio') {
 		serverLogger.info(`Connecting to ${mode.toUpperCase()} transport...`);
 		await serverInstance.connect(transportInstance);
 		serverLogger.info(
-			'MCP server started successfully and ready to process requests',
+			`MCP server started successfully and ready to process requests`,
 		);
 		return serverInstance;
 	} catch (err) {

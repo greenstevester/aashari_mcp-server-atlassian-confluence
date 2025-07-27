@@ -108,7 +108,7 @@ This keeps credentials separate and organized.
 
     ```json
     {
-    	"@aashari/mcp-server-atlassian-confluence": {
+    	" @greenstevester/mcp-server-atlassian-confluence": {
     		"environments": {
     			"ATLASSIAN_SITE_NAME": "<YOUR_SITE_NAME>",
     			"ATLASSIAN_USER_EMAIL": "<YOUR_ATLASSIAN_EMAIL>",
@@ -130,7 +130,7 @@ Set environment variables when running the server.
 ATLASSIAN_SITE_NAME="<YOUR_SITE_NAME>" \
 ATLASSIAN_USER_EMAIL="<YOUR_EMAIL>" \
 ATLASSIAN_API_TOKEN="<YOUR_API_TOKEN>" \
-npx -y @aashari/mcp-server-atlassian-confluence
+npx -y  @greenstevester/mcp-server-atlassian-confluence
 ```
 
 ### Step 3: Connect Your AI Assistant
@@ -145,9 +145,9 @@ Configure your MCP client (Claude Desktop, Cursor, etc.) to run this server.
     ```json
     {
     	"mcpServers": {
-    		"aashari/mcp-server-atlassian-confluence": {
+    		" greenstevester/mcp-server-atlassian-confluence": {
     			"command": "npx",
-    			"args": ["-y", "@aashari/mcp-server-atlassian-confluence"]
+    			"args": ["-y", " @greenstevester/mcp-server-atlassian-confluence"]
     		}
     	}
     }
@@ -161,9 +161,9 @@ Configure your MCP client (Claude Desktop, Cursor, etc.) to run this server.
 1.  Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`) > **Cursor Settings > MCP**.
 2.  Click **+ Add new MCP server**.
 3.  Enter:
-    - Name: `aashari/mcp-server-atlassian-confluence`
+    - Name: ` greenstevester/mcp-server-atlassian-confluence`
     - Type: `command`
-    - Command: `npx -y @aashari/mcp-server-atlassian-confluence`
+    - Command: `npx -y  @greenstevester/mcp-server-atlassian-confluence`
 4.  Click **Add**.
 5.  **Verify:** Wait for the indicator next to the server name to turn green.
 
@@ -186,13 +186,13 @@ No installation required - run directly using npx:
 
 ```bash
 # List spaces
-npx -y @aashari/mcp-server-atlassian-confluence list-spaces
+npx -y  @greenstevester/mcp-server-atlassian-confluence list-spaces
 
 # Get a specific page
-npx -y @aashari/mcp-server-atlassian-confluence get-page --page 123456
+npx -y  @greenstevester/mcp-server-atlassian-confluence get-page --page 123456
 
 # Search for content
-npx -y @aashari/mcp-server-atlassian-confluence search --cql "type=page AND text~API" --limit 10
+npx -y  @greenstevester/mcp-server-atlassian-confluence search --cql "type=page AND text~API" --limit 10
 ```
 
 ### Global Installation
@@ -202,35 +202,35 @@ For frequent use, you can install the package globally on your system:
 1. **Install globally** using npm:
 
     ```bash
-    npm install -g @aashari/mcp-server-atlassian-confluence
+    npm install -g  @greenstevester/mcp-server-atlassian-confluence
     ```
 
 2. **Verify installation** by checking the version:
 
     ```bash
-    mcp-atlassian-confluence --version
+    mcp-server-atlassian-confluence --version
     ```
 
 3. **Use the commands** without npx prefix:
 
     ```bash
     # List spaces
-    mcp-atlassian-confluence list-spaces
+    mcp-server-atlassian-confluence list-spaces
 
     # List spaces with filtering
-    mcp-atlassian-confluence list-spaces --type global --status current --limit 10
+    mcp-server-atlassian-confluence list-spaces --type global --status current --limit 10
 
     # Get space details
-    mcp-atlassian-confluence get-space --space DEV
+    mcp-server-atlassian-confluence get-space --space DEV
 
     # List pages in a space
-    mcp-atlassian-confluence list-pages --space-id 12345
+    mcp-server-atlassian-confluence list-pages --space-id 12345
 
     # Get page content
-    mcp-atlassian-confluence get-page --page 123456
+    mcp-server-atlassian-confluence get-page --page 123456
 
     # Search using CQL
-    mcp-atlassian-confluence search --cql "type=page AND text~API" --limit 10
+    mcp-server-atlassian-confluence search --cql "type=page AND text~API" --limit 10
     ```
 
 ### Configuration with Global Installation
@@ -243,7 +243,7 @@ When installed globally, you can still use the same configuration methods:
     ATLASSIAN_SITE_NAME="<YOUR_SITE_NAME>" \
     ATLASSIAN_USER_EMAIL="<YOUR_EMAIL>" \
     ATLASSIAN_API_TOKEN="<YOUR_API_TOKEN>" \
-    mcp-atlassian-confluence list-spaces
+    mcp-server-atlassian-confluence list-spaces
     ```
 
 2. **Using global MCP config file** (recommended):
@@ -251,4 +251,3 @@ When installed globally, you can still use the same configuration methods:
 
 ## License
 
-[ISC](https://opensource.org/licenses/ISC)
