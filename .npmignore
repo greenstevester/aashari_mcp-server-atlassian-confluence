@@ -40,4 +40,12 @@ yarn-error.log*
 
 # Runtime data
 .env
-.env.* 
+.env.*
+
+CHANGELOG.md
+CLAUDE.md
+Dockerfile
+todos.md
+.dockerignore
+.gitkeep
+.node-version

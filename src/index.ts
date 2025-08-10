@@ -124,7 +124,7 @@ async function main() {
 }
 
 // If this file is being executed directly (not imported), run the main function
-if (require.main === module) {
+if (import.meta.url.endsWith(process.argv[1])) {
 	main().catch((err) => {
 		indexLogger.error('Unhandled error in main process', err);
 		process.exit(1);
