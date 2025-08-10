@@ -1,38 +1,51 @@
 {
 	"name": "@greenstevester/mcp-server-atlassian-confluence",
-	"version": "1.0.0",
-	"description": "Node.js/TypeScript MCP server for Atlassian Confluence. Provides tools enabling AI systems (LLMs) to list/get spaces & pages (content formatted as Markdown) and search via CQL. Connects AI seamlessly to Confluence knowledge bases using the standard MCP interface.",
+	"version": "2.0.1",
+	"description": "MCP server for Atlassian Confluence. Provides tools enabling AI systems (LLMs) to list/get spaces & pages (content formatted as Markdown) and search via CQL. Connects AI seamlessly to Confluence knowledge bases using the standard MCP interface.",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
-	"type": "commonjs",
+	"type": "module",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/greenstevester/aashari_mcp-server-atlassian-confluence.git"
+		"url": "git+https://github.com/greenstevester/aashari_mcp-server-atlassian-confluence.git"
 	},
 	"bin": {
-		"mcp-server-atlassian-confluence": "./dist/index.js"
+		"mcp-server-atlassian-confluence": "dist/index.js"
 	},
 	"scripts": {
 		"build": "tsc",
 		"prepare": "npm run build && chmod +x dist/index.js",
 		"postinstall": "chmod +x dist/index.js || true",
-		"test": "jest",
-		"test:coverage": "jest --coverage",
-		"test:cli": "jest src/cli/.*\\.cli\\.test\\.ts --runInBand --testTimeout=60000",
+		"test": "NODE_OPTIONS='--experimental-vm-modules' jest",
+		"test:coverage": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage",
+		"test:cli": "NODE_OPTIONS='--experimental-vm-modules' jest src/cli/.*\\.cli\\.test\\.ts --runInBand --testTimeout=60000",
 		"lint": "eslint src --ext .ts --config eslint.config.mjs",
 		"format": "prettier --write 'src/**/*.ts' 'scripts/**/*.js'",
 		"prettier": "npx prettier src --check && npx prettier scripts --check",
 		"prettier:fix": "npm run prettier -- --write",
-		"publish:npm": "npm publish",
 		"update:check": "npx npm-check-updates",
 		"update:deps": "npx npm-check-updates -u && npm install --legacy-peer-deps",
 		"update:version": "node scripts/update-version.js",
-		"dev:server": "DEBUG=true npm run build && npx @modelcontextprotocol/inspector -e DEBUG=true node dist/index.js",
+		"dev:server": "NODE_DEBUG=undici DEBUG=true npm run build && npx @modelcontextprotocol/inspector -e DEBUG=true node dist/index.js",
 		"dev:cli": "DEBUG=true npm run build && DEBUG=true node dist/index.js",
-		"start:server": "npm run build && npx @modelcontextprotocol/inspector node dist/index.js",
-		"start:cli": "npm run build && node dist/index.js",
-		"clean": "rimraf ./dist/ ./exec/",
-		"clean_node_modules": "rimraf ./node_modules package-lock.json"
+		"start:inspector": "npx @modelcontextprotocol/inspector node dist/index.js",
+		"start:debug": "NODE_OPTIONS='--inspect-brk=9229' ts-node src/index.ts",
+		"clean-dist": "rimraf ./dist/",
+		"clean-node-modules": "rimraf ./node_modules package-lock.json",
+		"clean-all": "npm run clean-dist && npm run clean-node-modules",
+		"licence-checker": "npx license-checker-evergreen --onlyAllow 'MIT;Apache-2.0;Apache 2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;Unlicense;WTFPL;Python-2.0;CC0-1.0;CC-BY-3.0;CC-BY-4.0;BlueOak-1.0.0;Artistic-2.0' --excludePrivatePackages",
+		"publish-dry-run:npm": "npm pkg fix && npm publish --dry-run $NPM_PUBLISH_OPTIONS",
+		"publish:npm": "npm pkg fix && npm publish --dry-run $NPM_PUBLISH_OPTIONS",
+		"semantic-release": "npm run clean-dist && npm run build && npm run test && chmod +x dist/index.js",
+		"docker:login": "echo $DOCKER_HUB_TOKEN | docker login -u $DOCKER_HUB_USERNAME --password-stdin",
+		"docker:build-docker": "npm run clean-dist && npm run prepare && docker build -t $DOCKER_HUB_USERNAME/mcp-atlassian-confluence-evergreen:latest .",
+		"docker:tag": "docker tag $DOCKER_HUB_USERNAME/mcp-atlassian-confluence-evergreen:latest $DOCKER_HUB_USERNAME/mcp-atlassian-confluence-evergreen:$npm_package_version",
+		"docker:clean-local-image": "docker rmi $DOCKER_HUB_USERNAME/mcp-atlassian-confluence-evergreen:latest $DOCKER_HUB_USERNAME/mcp-atlassian-confluence-evergreen:$npm_package_version",
+		"docker:push:latest": "docker push $DOCKER_HUB_USERNAME/mcp-atlassian-confluence-evergreen:latest",
+		"docker:push:versioned": "docker push $DOCKER_HUB_USERNAME/mcp-atlassian-confluence-evergreen:$npm_package_version",
+		"docker:build-tag-push": "npm run docker:login && npm run docker:build-docker && npm run docker:tag && npm run docker:push:latest && npm run docker:push:versioned",
+		"docker:update-docker-description": "export DOCKERHUB_REPO=mcp-atlassian-confluence-evergreen && chmod +x scripts/update-dockerhub-description.sh && scripts/update-dockerhub-description.sh"
+
 	},
 	"keywords": [
 		"mcp",

@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as crypto from 'crypto';
-import { getPackageName } from './package.util';
+import { getPackageName } from './package.util.js';
 
 /**
  * Format a timestamp for logging
