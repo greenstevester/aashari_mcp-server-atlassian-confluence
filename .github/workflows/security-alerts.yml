@@ -1,9 +1,9 @@
 name: Security Alerts
 
 on:
-  schedule:
+  # schedule:
     # Run security checks twice daily
-    - cron: '0 6,18 * * *'
+    # - cron: '0 6,18 * * *'
   workflow_dispatch:
 
 permissions:
